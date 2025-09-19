@@ -11,7 +11,8 @@ try:
     client = gspread.authorize(creds)
     print("Google Sheets client authorized successfully.")
     print("Attempting to open the Google Sheet..."+SHEET_NAME)
-    spreadsheet = client.open(SHEET_NAME)
+    #spreadsheet = client.open(SHEET_NAME)
+    spreadsheet = client.open_by_key('10p7BI3zlzDjy7tqVuAxo3ZOq4HHJoXwek9qFTYHAngQ')  # Replace with your actual spreadsheet key
     print(spreadsheet.id)
     print("Successfully connected to Google Sheets!")
     print(f"Sheet URL: https://docs.google.com/spreadsheets/d/{spreadsheet.id}")

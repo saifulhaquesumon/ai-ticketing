@@ -1,0 +1,9 @@
+streamlit
+gspread
+google-auth
+uuid
+datetime
+crewai
+langchain-openai
+langchain-community
+ollama

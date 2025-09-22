@@ -1,3 +1,6 @@
+Run the program using below command
+streamlit run app_openaisdk.py
+
 # ai-ticketing
 Raise and assign ticket
 

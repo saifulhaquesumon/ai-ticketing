@@ -3,6 +3,7 @@ import uuid
 import gspread
 from datetime import datetime
 from google.oauth2.service_account import Credentials
+import streamlit as st
 
 # --- Configuration ---
 # To use the Google Sheets API, you need to set up a service account and
@@ -25,7 +26,7 @@ CREDS_FILE = "credentials.json"
 SHEET_NAME = "ticketing_ai"  # Make sure this matches your actual sheet name
 
 # Predefined human agents for complaint assignment
-HUMAN_AGENTS = ["Rahim", "Sara", "John"]
+HUMAN_AGENTS = ["Rahim", "Karim", "Toha"]
 
 # Dummy FAQ data
 FAQ_DATA = {
@@ -126,7 +127,7 @@ def customer_support_agent(user_query, user_name="Customer"):
         return output_guardrail(message)
 
     # Check if the query is a complaint
-    complaint_keywords = ["complaint", "frustrated", "down", "not working", "slow"]
+    complaint_keywords = ["complaint", "frustrated", "down", "not working", "slow","problem","issue"]
     is_complaint = any(keyword in user_query.lower() for keyword in complaint_keywords)
 
     if is_complaint:
@@ -146,15 +147,115 @@ def customer_support_agent(user_query, user_name="Customer"):
 
 # --- Example Usage ---
 
+
+
+
+#============================
+def main():
+    st.set_page_config(
+        page_title="Customer Support AI Agent",
+        page_icon="🤖",
+        layout="wide"
+    )
+    
+    # Initialize session state
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    if "user_name" not in st.session_state:
+        st.session_state.user_name = ""
+    if "llms_initialized" not in st.session_state:
+        st.session_state.llms_initialized = False
+    if "agents_initialized" not in st.session_state:
+        st.session_state.agents_initialized = False
+    
+    # Sidebar for user name and info
+    with st.sidebar:
+        st.title("🤖 Customer Support")
+        st.session_state.user_name = st.text_input("Your Name", value=st.session_state.user_name)
+        
+        st.divider()
+        st.subheader("About")
+        st.write("This AI agent can help you with:")
+        st.write("• FAQ questions about our services")
+        st.write("• Technical support issues")
+        st.write("• Billing and account questions")
+        st.write("• Network problems")
+        
+        st.divider()
+        st.subheader("Available Agents by Category")
+        # for  agents in HUMAN_AGENTS.items():
+        #     st.write(f"**Complaint**: {', '.join(agents)}")
+    
+    # Main chat area
+    st.title("Customer Support AI Agent")
+    st.write("How can I help you today?")
+    
+    # Initialize LLMs and agents
+    if not st.session_state.llms_initialized:
+        with st.spinner("Initializing AI models..."):
+            #ollama_llm, openai_llm = initialize_llms()
+            # if ollama_llm and openai_llm:
+            #     st.session_state.ollama_llm = ollama_llm
+            #     st.session_state.openai_llm = openai_llm
+            st.session_state.llms_initialized = True
+            # else:
+            #     st.error("Failed to initialize AI models. Please check your API keys.")
+            #     return
+    
+    if not st.session_state.agents_initialized and st.session_state.llms_initialized:
+        with st.spinner("Setting up AI agents..."):
+            # complaint_category_analyzer, complaint_severity_analyzer, faq_specialist = setup_crewai_agents(st.session_state.openai_llm)
+            # st.session_state.complaint_category_analyzer = complaint_category_analyzer
+            # st.session_state.complaint_severity_analyzer = complaint_severity_analyzer
+            # st.session_state.faq_specialist = faq_specialist
+            st.session_state.agents_initialized = True
+    
+    # Display chat messages
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+    
+    # Chat input
+    if prompt := st.chat_input("Type your message here..."):
+        if not st.session_state.user_name:
+            st.warning("Please enter your name in the sidebar first.")
+            st.stop()
+        
+        # Add user message to chat history
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+        
+        # Generate AI response
+        with st.chat_message("assistant"):
+            with st.spinner("Thinking..."):
+                response = customer_support_agent(
+                    prompt, 
+                    st.session_state.user_name
+                    # st.session_state.ollama_llm,
+                    # st.session_state.openai_llm,
+                    # st.session_state.complaint_category_analyzer,
+                    # st.session_state.complaint_severity_analyzer,
+                    # st.session_state.faq_specialist
+                )
+                st.markdown(response)
+        
+        # Add AI response to chat history
+        st.session_state.messages.append({"role": "assistant", "content": response})
+
+#============================
+
+
 if __name__ == "__main__":
-    print("Welcome to the Customer Support AI Agent!")
-    print("You can ask questions or file a complaint. Type 'exit' to quit.")
+    main()
+    # print("Welcome to the Customer Support AI Agent!")
+    # print("You can ask questions or file a complaint. Type 'exit' to quit.")
 
-    while True:
-        user_input = input("You: ")
-        if user_input.lower() == "exit":
-            break
+    # while True:
+    #     user_input = input("You: ")
+    #     if user_input.lower() == "exit":
+    #         break
 
-        # In a real-world scenario, you would get the user's name from their profile
-        agent_response = customer_support_agent(user_input, user_name="John Doe")
-        print(f"Agent: {agent_response}")
+    #     # In a real-world scenario, you would get the user's name from their profile
+    #     agent_response = customer_support_agent(user_input, user_name="John Doe")
+    #     print(f"Agent: {agent_response}")
